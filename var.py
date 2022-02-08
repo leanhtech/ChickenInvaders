@@ -1,4 +1,18 @@
-from process import load_obj, text, to_rect
+import pygame
+
+
+def load_obj(path, size_obj):
+    x = pygame.image.load(path).convert_alpha()
+    return pygame.transform.scale(x, size_obj)
+
+
+def text(size_text, string, color):
+    x = pygame.font.Font('Data/font/VT323-Regular.ttf', size_text)
+    return x.render(string, False, color).convert_alpha()
+
+
+def to_rect(obj):
+    return obj.get_rect()
 
 
 def link_img():
@@ -106,11 +120,11 @@ def player_chicken_laser_egg_score_inf():
                'pos': [],
                'size': size_['egg']
            }, {
-                'img': img_score,
-                'rect': to_rect(img_score),
-                'pos': [],
-                'size': size_['egg']
-            }
+               'img': img_score,
+               'rect': to_rect(img_score),
+               'pos': [],
+               'size': size_['egg']
+           }
 
 
 def obj_playing():
@@ -121,4 +135,16 @@ def obj_playing():
         [load_obj(img['score'], size_['items']), (0, 0)],
         [load_obj(img['hp'], size_['items']), (0, 60)],
         [load_obj(img['menu'], size_['items']), (1306, 5)]
+    ]
+
+
+def obj_start():
+    img = link_img()
+    size_ = size()
+    txt = obj_basic()
+    return [
+        [load_obj(img['bg'], size_['bg']), (0, 0)],
+        [txt['menu'], size_['main_menu']],
+        [txt['text_play'], size_[1]],
+        [txt['text_exit'], size_[2]]
     ]
