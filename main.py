@@ -1,34 +1,8 @@
 import pygame
 import random
 from var import link_music, player_chicken_laser_egg_score_inf, obj_playing
-from process import screen_playing, create_game, load_music, add_event, change_pos, collision
+from process import set_chicken, screen_playing, create_game, load_music, add_event, change_pos, collision, menu_start, menu_load
 from sys import exit
-
-
-def set_ck(level, number_ck, ck_inf):
-    distance = 60
-    pos_x = 100
-    pos_y = 0
-    if level == 1:
-        for i in range(number_ck):
-            if i % 5 == 0 and i != 0:
-                pos_x += 600
-            if i % 10 == 0 and i != 0:
-                pos_x = 100
-                pos_y += distance
-            ck_inf['pos'].append((pos_x, pos_y))
-            pos_x += distance
-
-        return
-
-
-def screen_start(screen, obj_game, pos, pos_sl):
-    screen.blit(obj_game['bg'], pos['bg'])
-    screen.blit(obj_game['select_sign'], pos_sl)
-    screen.blit(obj_game['main_menu'], (500, 100))
-    screen.blit(obj_game['text_play'], (600, 350))
-    screen.blit(obj_game['text_exit'], (640, 450))
-    pygame.display.update()
 
 
 def main():
@@ -59,52 +33,20 @@ def main():
     load_lv(level, lv_inf, lv_ele)
     '''
     # Set chicken
-    set_ck(level, lv_inf[level][number_ck], ck_inf)
+    set_chicken(1, 30, ck_inf)
 
-    ls_speed = add_event(0, 500)
+    ls_speed = add_event(0, 800)
     egg_speed = add_event(1, 1500)
 
-    pos_sl = (500, 350)
-    '''
-    while True:
-        screen.blit(bg_show, pos['bg'])
-        screen.blit(select_sign, pos_sl)
-        screen.blit(menu, (500, 100))
-        screen.blit(play_game, (600, 350))
-        screen.blit(exit_game, (640, 450))
-        pygame.display.update()
-        # Handle event
-        for event in pygame.event.get():
-            # Close app
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-
-        # Key
-        key = pygame.key.get_pressed()
-        if key[pygame.K_DOWN] and pos_sl[1] < 450:
-            pos_sl = change_pos(pos_sl, (0, 100))
-        elif key[pygame.K_UP] and pos_sl[1] > 350:
-            pos_sl = change_pos(pos_sl, (0, -100))
-        elif key[pygame.K_RETURN]:
-            pos_sl = (500, 350)
-            while True:
-                print('da vo')
-                screen.blit(bg_show, pos['bg'])
-                screen.blit(select_sign, pos_sl)
-                screen.blit(cont_game, (600, 350))
-                screen.blit(new_game, (640, 450))
-                pygame.display.update()
-                key = pygame.key.get_pressed()
-                if key[pygame.K_DOWN] and pos_sl[1] < 450:
-                    pos_sl = change_pos(pos_sl, (0, 100))
-                elif key[pygame.K_UP] and pos_sl[1] > 350:
-                    pos_sl = change_pos(pos_sl, (0, -100))
-                refresh.tick(10)
-
-        refresh.tick(10)
-    '''
     basic = obj_playing()
+    select = menu_start(screen)
+    if select == 0:
+        select = menu_load(screen)
+        if select == 1:
+            pass
+    elif select == 1:
+        pygame.quit()
+        exit()
     while True:
         refresh.tick(60)
         screen_playing(screen, basic, pl_inf, ck_inf, egg_inf, ls_inf, score_inf)
@@ -116,7 +58,7 @@ def main():
                 exit()
             # Create laser
             if event.type == ls_speed:
-                ls_inf['pos'].append(change_pos(pl_inf['pos'][0], (20, -50)))  # (20, -50)
+                ls_inf['pos'].append(change_pos(pl_inf['pos'][0], (20, -20)))  # (20, -50)
                 laser_sound.play()
             # Create egg
             if event.type == egg_speed:
@@ -136,7 +78,7 @@ def main():
 
         # Move Score
         for i in range(len(score_inf['pos'])):
-            score_inf['pos'][i] = change_pos(score_inf['pos'][i], (0, 5))
+            score_inf['pos'][i] = change_pos(score_inf['pos'][i], (0, 1))
 
         # Delete chicken
         check = collision(ls_inf, ck_inf)
