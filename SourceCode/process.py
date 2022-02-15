@@ -1,15 +1,15 @@
-import pygame
 import random
 from sys import exit
-from var import load_obj, text, obj_playing, link_music, player_chicken_laser_egg_score_inf
+from var import *
+from os import remove
 
 
-def create_game():
+def create_game(name):
     pygame.init()
     screen = pygame.display.set_mode((1366, 768))
-    pygame.display.set_caption('ChickenInvader')
-    ic_game = pygame.image.load('../Data/image/conga.png')
-    pygame.display.set_icon(ic_game)
+    pygame.display.set_caption(name)
+    pygame.display.set_icon(pygame.image.load('../Data/image/chicken.png'))
+    load_music(all_music()['bg'], 0.2).play(-1)
     return screen
 
 
@@ -30,14 +30,6 @@ def r_file():
 def close():
     pygame.quit()
     exit()
-
-
-def show_score_hp(screen, score, hp):
-    temp = text(50, f"x{score}", 'Yellow')
-    screen.blit(temp, (50, 0))
-    temp = text(50, f"x{hp}", 'Brown')
-    screen.blit(temp, (50, 60))
-    pygame.display.update()
 
 
 def load_music(path, vol):
@@ -66,8 +58,15 @@ def add_event(id_event, timer):
     return x
 
 
-def screen_playing(screen, basic, pl_inf, ck_inf, egg_inf, ls_inf, score_inf, score, hp):
-    for i, j in basic:
+def show_score_hp(screen, score, hp):
+    temp = text(f"x{score}", 50, 'Yellow')
+    screen.blit(temp, (50, 0))
+    temp = text(f"x{hp}", 50, 'Brown')
+    screen.blit(temp, (50, 60))
+
+
+def screen_playing(screen, obj, pl_inf, ck_inf, egg_inf, ls_inf, score_inf, score, hp, time):
+    for i, j in obj:
         screen.blit(i, j)
     for i in ls_inf['pos']:
         screen.blit(ls_inf['img'], i)
@@ -77,26 +76,34 @@ def screen_playing(screen, basic, pl_inf, ck_inf, egg_inf, ls_inf, score_inf, sc
         screen.blit(egg_inf['img'], i)
     for i in score_inf['pos']:
         screen.blit(score_inf['img'], i)
-    screen.blit(pl_inf['img'], pl_inf['pos'][0])
-
     show_score_hp(screen, score, hp)
+    screen.blit(text(f"Time remaining: {time}", 30, 'Red'), (1100, 700))
+    screen.blit(pl_inf['img'], pl_inf['pos'][0])
     pygame.display.update()
 
 
-def create_menu(screen, obj_sl, name):
-    bg = load_obj('../Data/image/hinhnen.png', (1366, 768))
-    signal = text(50, '>>>', 'White', False)
-    count = len(obj_sl) - 1
-    pos = (obj_sl[0][1][0] - 80, obj_sl[0][1][1])
+def add_pos_menu(obj_menu):
+    new_arr = [[obj_menu[0], (500, 100)]]
+    pos_y = 350
+    for i in range(1, len(obj_menu)):
+        new_arr.append([obj_menu[i], (600, pos_y)])
+        pos_y += 100
+    return new_arr
+
+
+def create_menu(screen, menu):
+    obj = add_pos_menu(menu)
+    bg = get_img('bg')
+    signal = text('>>>', 50, 'White')
+    pos_sgn = (obj[1][1][0] - 80, obj[1][1][1])
     fps = pygame.time.Clock()
-    select = 0
+    select = 1
     while True:
         fps.tick(15)
         screen.blit(bg, (0, 0))
-        screen.blit(signal, pos)
-        for i, j in obj_sl:
+        screen.blit(signal, pos_sgn)
+        for i, j in obj:
             screen.blit(i, j)
-        screen.blit(name, (500, 100))
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -105,49 +112,23 @@ def create_menu(screen, obj_sl, name):
                 close()
         # Key
         key = pygame.key.get_pressed()
-        if key[pygame.K_DOWN] and select < count:
+        if key[pygame.K_DOWN] and select < len(menu) - 1:
             select += 1
-            pos = change_pos(pos, (0, 100))
-        elif key[pygame.K_UP] and select > 0:
+            pos_sgn = change_pos(pos_sgn, (0, 100))
+        elif key[pygame.K_UP] and select > 1:
             select -= 1
-            pos = change_pos(pos, (0, -100))
+            pos_sgn = change_pos(pos_sgn, (0, -100))
         elif key[pygame.K_RETURN]:
             return select
-
-
-def menu_start(screen):
-    select = [
-        [text(50, 'Play Game', 'Yellow'), (600, 350)],
-        [text(50, 'Exit', 'Yellow'), (640, 450)]
-    ]
-    name = text(100, 'Main Menu', 'Red')
-    return create_menu(screen, select, name)
-
-
-def menu_load(screen):
-    select = [
-        [text(50, 'Previous Level', 'Yellow'), (600, 350)],
-        [text(50, 'New Game', 'Yellow'), (640, 450)]
-    ]
-    name = text(100, 'Load or New', 'Red')
-    return create_menu(screen, select, name)
-
-
-def menu_pause(screen):
-    select = [
-        [text(50, 'Resume', 'Yellow'), (600, 350)],
-        [text(50, 'Reload', 'Yellow'), (600, 450)]
-    ]
-    name = text(100, 'Pause Game', 'Red')
-    return create_menu(screen, select, name)
 
 
 def create_chicken(level, number_ck, ck_inf):
     distance = 80
     x = 100
     y = 0
-    ck_inf['pos'].append((x, y))
-    if level == 1:
+    direct = False
+    if level < 4:
+        ck_inf['pos'].append((x, y))
         for i in range(1, number_ck):
             if i % 15 == 0:
                 x = 100
@@ -156,6 +137,25 @@ def create_chicken(level, number_ck, ck_inf):
                 x += distance
             ck_inf['pos'].append((x, y))
         return
+    else:
+        ck_row = 10
+        if level == 5:
+            ck_row = 15
+        ck_inf['pos'].append((x, y))
+        ck_inf['direct'].append(direct)
+        for i in range(1, number_ck):
+            if i % ck_row == 0:
+                if direct:
+                    x = 100
+                    direct = False
+                else:
+                    x = 500
+                    direct = True
+                y += 100
+            else:
+                x += distance
+            ck_inf['pos'].append((x, y))
+            ck_inf['direct'].append(direct)
 
 
 def create_laser(num_ray, ls_inf, pl_inf, sound):
@@ -174,14 +174,40 @@ def create_laser(num_ray, ls_inf, pl_inf, sound):
 
 
 def create_egg(level, egg_inf, ck_inf):
-    if len(ck_inf['pos']) and level == 1:
+    if len(ck_inf['pos']) and level < 4:
         temp = random.randint(0, len(ck_inf['pos']) - 1)
         egg_inf['pos'].append(change_pos(ck_inf['pos'][temp], (10, 50)))
+    elif len(ck_inf['pos']) and level >= 4:
+        temp = random.randint(0, len(ck_inf['pos']) - 1)
+        egg_inf['pos'].append(change_pos(ck_inf['pos'][temp], (10, 50)))
+        egg_inf['direct'].append(ck_inf['direct'][temp])
 
 
 def move(speed, inf):
     for i in range(len(inf['pos'])):
         inf['pos'][i] = change_pos(inf['pos'][i], (0, speed))
+
+
+def move_ck(inf):
+    get_dir = {
+        True: -1,
+        False: 1,
+    }
+    for i in range(len(inf['pos'])):
+        inf['pos'][i] = change_pos(inf['pos'][i], (get_dir[inf['direct'][i]], 0))
+        if inf['pos'][i][0] > 1360:
+            inf['pos'][i] = (0, inf['pos'][i][1])
+        elif inf['pos'][i][0] < 0:
+            inf['pos'][i] = (1300, inf['pos'][i][1])
+
+
+def move_eggs(inf):
+    get_dir = {
+        True: -1,
+        False: 1,
+    }
+    for i in range(len(inf['pos'])):
+        inf['pos'][i] = change_pos(inf['pos'][i], (get_dir[inf['direct'][i]], 2))
 
 
 def out_screen(inf, size_screen):
@@ -190,72 +216,125 @@ def out_screen(inf, size_screen):
             inf['pos'].remove(i)
 
 
+def out_screen_egg(level, inf, size_screen):
+    for i in inf['pos']:
+        if i[0] > size_screen[0] or i[0] < 0 or i[1] > size_screen[1] or i[1] < 0:
+            if level > 3:
+                del inf['direct'][inf['pos'].index(i)]
+            inf['pos'].remove(i)
+
+
+def screen_show_mess(screen, string):
+    screen.blit(get_img('bg'), (0, 0))
+    screen.blit(text(string, 100, 'Red'), (500, 200))
+    pygame.display.update()
+
+
 def loop_playing(screen, load=None):
     if load is None:
         load = [1, 1, 0, 5]
     lv_game, lv_gun, score, hp = load[0], load[1], load[2], load[3]
-    if lv_game != 1:
+    if lv_game > 1:
         w_file(lv_game, lv_gun, score, hp)
+
     shoot_time = 0
     num_ck = 1
-    req_plus_hp = 2
+    num_create_ck = 2
     max_time = 3
-    min_req_score = 4
-    game = [
-        [],
-        [1500, 30, 10, 60000, 25]
-    ]
+    req_plus_hp = 4
+    min_req_score = 5
+    game = game_level()
 
     ray_gun = 1
     speed_gun = 2
-    gun = [
-        [],
-        [1000, 1, 10]
-    ]
+    req_score_gun = 3
+    gun = gun_level()
+
+    screen_show_mess(screen, f"LEVEL {lv_game}")
+    pygame.time.delay(3000)
+
     fps = pygame.time.Clock()
     Max = pygame.display.get_window_size()
-    music = link_music()
+    music = all_music()
 
-    pl_inf, ck_inf, ls_inf, egg_inf, score_inf = player_chicken_laser_egg_score_inf()
+    pl_inf = player_inf()
+    ck_inf = chicken_inf()
+    ls_inf = laser_inf()
+    egg_inf = eg_inf()
+    score_inf = sc_inf()
 
-    laser_sound = load_music(music['shoot'], 0.2)
-    boom_sound = load_music(music['explode_ck'], 0.3)
-    collision_sound = load_music(music['collision'], 0.3)
-    bg_sound = load_music(music['bg'], 0.3)
-    bg_sound.play(-1)
+    size_player = pl_inf['img'].get_size()
+    laser_sound = load_music(music['shoot'], 0.05)
+    boom_sound = load_music(music['explode_ck'], 0.05)
+    collision_sound = load_music(music['collision'], 0.05)
 
     create_chicken(lv_game, game[lv_game][num_ck], ck_inf)
+    game[lv_game][num_create_ck] -= 1
 
     ls_speed = add_event(0, gun[lv_gun][shoot_time])
     egg_speed = add_event(1, game[lv_game][shoot_time])
-    countdown = add_event(2, game[lv_game][max_time])
+    countdown = add_event(2, 1000)
 
-    count = game[lv_game][max_time] / 1000
-    basic = obj_playing()
+    count = game[lv_game][max_time]
+    obj = obj_default_playing()
+    plus_hp = False
+
     while True:
         fps.tick(60)
-        screen_playing(screen, basic, pl_inf, ck_inf, egg_inf, ls_inf, score_inf, score, hp)
+        screen_playing(screen, obj, pl_inf, ck_inf, egg_inf, ls_inf, score_inf, score, hp, count)
         # Handle event
         for event in pygame.event.get():
             # Close app
             if event.type == pygame.QUIT:
                 close()
             # Create laser
-            if event.type == ls_speed:
+            elif event.type == ls_speed:
                 create_laser(gun[lv_gun][ray_gun], ls_inf, pl_inf, laser_sound)
             # Create egg
-            if event.type == egg_speed:
+            elif event.type == egg_speed:
                 create_egg(lv_game, egg_inf, ck_inf)
+            elif event.type == countdown:
+                count -= 1
+
+        if game[lv_game][num_create_ck] > 0 and (len(ck_inf['pos']) == 0 and len(score_inf['pos']) == 0):
+            create_chicken(lv_game, game[lv_game][num_ck], ck_inf)
+            game[lv_game][num_create_ck] -= 1
+
+        if score % game[lv_game][req_plus_hp] == 0 and score != 0 and plus_hp is False:
+            hp += 1
+            plus_hp = True
+
+        if (len(ck_inf['pos']) == 0 and len(score_inf['pos']) == 0) or (
+                count == 0 and score >= game[lv_game][min_req_score]):
+            lv_game += 1
+            w_file(lv_game, lv_gun, score, hp)
+            load = [lv_game, lv_gun, score, hp]
+            break
+        elif count == 0 or hp == 0:
+            screen_show_mess(screen, 'YOU LOSE')
+            pygame.time.delay(3000)
+            if lv_game != 1:
+                remove('../Data/save/save.txt')
+            return
+
+        # Upgrade Gun
+        if score >= gun[lv_gun][req_score_gun] and lv_gun < len(gun):
+            lv_gun += 1
+            pygame.time.set_timer(ls_speed, gun[lv_gun][shoot_time])
 
         # Delete out screen
         out_screen(ls_inf, Max)
-        out_screen(egg_inf, Max)
         out_screen(score_inf, Max)
+        out_screen_egg(lv_game, egg_inf, Max)
 
         # Move
+        if lv_game > 3:
+            move_ck(ck_inf)
+            move_eggs(egg_inf)
+        else:
+            move(2, egg_inf)
         move(- gun[lv_gun][speed_gun], ls_inf)
         move(1, score_inf)
-        move(2, egg_inf)
 
         # Delete chicken
         check = collision(ls_inf, ck_inf)
@@ -266,6 +345,8 @@ def loop_playing(screen, load=None):
             score_inf['pos'].append(ck_inf['pos'][check[1]])
             ls_inf['pos'].pop(check[0])
             ck_inf['pos'].pop(check[1])
+            if lv_game > 3:
+                ck_inf['direct'].pop(check[1])
 
         # Delete Egg
         check = collision(egg_inf, pl_inf)
@@ -275,6 +356,8 @@ def loop_playing(screen, load=None):
             pygame.display.update()
             pygame.time.delay(20)
             egg_inf['pos'].pop(check[0])
+            if lv_game > 3:
+                egg_inf['direct'].pop(check[0])
             hp -= 1
 
         # Plus Score
@@ -282,14 +365,15 @@ def loop_playing(screen, load=None):
         if check is not None:
             score_inf['pos'].pop(check[0])
             score += 1
+            plus_hp = False
 
         # Move Player
         key = pygame.key.get_pressed()
         pos_x, pos_y = pl_inf['pos'][0]
         more_max_w = pos_x - pl_inf['move'] > 0
-        less_max_w = pos_x + pl_inf['move'] + pl_inf['size'][0] <= Max[0]
+        less_max_w = pos_x + pl_inf['move'] + size_player[0] <= Max[0]
         more_half_h = pos_y - pl_inf['move'] > Max[1] // 2
-        less_max_h = pos_y + pl_inf['move'] + pl_inf['size'][1] <= Max[1]
+        less_max_h = pos_y + pl_inf['move'] + size_player[1] <= Max[1]
         if (key[pygame.K_LEFT] or key[pygame.K_a]) and more_max_w:
             pl_inf['pos'][0] = change_pos(pl_inf['pos'][0], (-pl_inf['move'], 0))
         elif (key[pygame.K_RIGHT] or key[pygame.K_d]) and less_max_w:
@@ -299,7 +383,11 @@ def loop_playing(screen, load=None):
         elif (key[pygame.K_DOWN] or key[pygame.K_s]) and less_max_h:
             pl_inf['pos'][0] = change_pos(pl_inf['pos'][0], (0, pl_inf['move']))
         elif key[pygame.K_ESCAPE]:
-            choose = menu_pause(screen)
-            if choose == 1:
+            choose = create_menu(screen, menu_pause())
+            if choose == 2:
                 break
-    loop_playing(screen, load)
+    if load[0] < len(game):
+        loop_playing(screen, load)
+    else:
+        screen_show_mess(screen, 'YOU WIN')
+    return
