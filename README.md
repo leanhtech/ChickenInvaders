@@ -12,20 +12,20 @@ pip install pygame
 - Tải code về sẽ có tên là ChickenInvaders-main.zip
 - Giải nén file zip rồi mở Pychram mở folder vừa giải nén ra được (như hình bên dưới).
 
-![img mb](demo1.png)
+![img demo](demo1.png)
 
 - Chọn Trust Project
 
-![img mb](demo2.png)
+![img demo](demo2.png)
 
 - Chọn Add Configuation... -> Add new run -> Python
 - Chọn Script path là file SourceCode\main.py (như hình bên dưới)
 
-![img mb](demo3.png)
+![img demo](demo3.png)
 
 - Chọn working directory là folder SourceCode (như hình bên dưới)
 
-![img mb](demo4.png)
+![img demo](demo4.png)
 
 - Chọn Ok rồi chạy bình thường
 
@@ -33,6 +33,6 @@ pip install pygame
 - Tải code về sẽ có tên là ChickenInvaders-main.zip
 - Giải nén file zip rồi mở Visual Code mở folder SourceCode trong folder vừa giải nén ra được (như hình bên dưới).
 
-![img mb](demo5.png)
+![img demo](demo5.png)
 
 - Run file main.py
