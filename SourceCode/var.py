@@ -1,147 +1,186 @@
 import pygame
 
 
-def load_obj(path, size_obj):
-    x = pygame.image.load(path).convert_alpha()
-    return pygame.transform.scale(x, size_obj)
-
-
-def text(size_text, string, color, underline=True):
-    x = pygame.font.Font('../Data/font/VT323-Regular.ttf', size_text)
-    x.set_underline(underline)
-    return x.render(string, False, color).convert_alpha()
-
-
-def to_rect(obj):
-    return obj.get_rect()
-
-
-def link_img():
+def all_img():
     dir_img = '../Data/image/'
     return {
-        'bg': f'{dir_img}hinhnen.png',
-        'score': f'{dir_img}duiga.png',
-        'hp': f'{dir_img}tim.png',
-        'menu': f'{dir_img}menu.png',
-        'esc': f'{dir_img}thoat.png',
-        'player': f'{dir_img}phithuyen.png',
-        'chicken': f'{dir_img}conga.png',
-        'laser_pl_lv1': f'{dir_img}laser_lv1.png',
+        'bg': f'{dir_img}background.png',
+        'score': f'{dir_img}score.png',
+        'hp': f'{dir_img}hp.png',
+        'player': f'{dir_img}spaceship.png',
+        'chicken': f'{dir_img}chicken.png',
+        'laser': f'{dir_img}laser.png',
         'egg': f'{dir_img}egg.png',
         'explode': f'{dir_img}explode.png'
     }
 
 
-def link_music():
+def all_size():
+    item_size = (50, 50)
+    return {
+        'bg': (1366, 768),
+        'score_txt': 50,
+        'hp_txt': 50,
+        'hp': item_size,
+        'score': item_size,
+        'player': (60, 60),
+        'chicken': (50, 50),
+        'laser': (20, 40),
+        'egg': (30, 40),
+        'explode': (60, 60),
+        'font': 50,
+        'small_font': 25,
+        'title': 100
+    }
+
+
+def all_music():
     dir_music = '../Data/music/'
     return {
         'bg': f'{dir_music}level1.ogg',
         'shoot': f'{dir_music}shoot.wav',
-        'explode_ck': f'{dir_music}Chicken.mp3',
+        'explode_ck': f'{dir_music}chicken.mp3',
         'collision': f'{dir_music}boom.wav'
     }
 
 
-def size():
-    return {
-        'bg': (1366, 768),
-        'player': (60, 60),
-        'chicken': (50, 50),
-        'items': (50, 50),
-        'laser': (20, 40),
-        'egg': (30, 40),
-        'font': 50,
-    }
-
-
-def position():
+def all_position():
     return {
         'bg': (0, 0),
-        'point_ic': (0, 0),
-        'point': (50, 0),
-        'hp_ic': (0, 60),
-        'hp': (50, 60),
-        'menu': (1306, 5),
-        'main_menu': (500, 100),
-        1: (600, 350),
-        2: (640, 450)
+        'score': (0, 0),
+        'hp': (0, 60),
+        'pause': (1250, 5),
+        'main_menu': (500, 100)
     }
 
 
-def obj_basic():
-    img = link_img()
-    size_ = size()
-    return {
-        'bg': load_obj(img['bg'], size_['bg']),
-        'point_ic': load_obj(img['score'], size_['items']),
-        'hp_ic': load_obj(img['hp'], size_['items']),
-        'menu': text(100, 'Main Menu', 'Red'),
-        'text_play': text(size_['font'], 'Play Game', 'Yellow'),
-        'text_exit': text(size_['font'], 'Exit', 'Yellow'),
-        'select_sign': text(size_['font'], '>>>', 'White'),
-        'text_cont': text(size_['font'], 'Continue Game', 'Yellow'),
-        'text_new': text(size_['font'], 'New Game', 'Yellow')
-    }
+def text(string='Unknown', size=50, color='Yellow', underline=False, bold=False, italic=False, smooth=True):
+    x = pygame.font.Font('../Data/font/VT323-Regular.ttf', size)
+    x.set_underline(underline)
+    x.set_bold(bold)
+    x.set_italic(italic)
+    return x.render(string, smooth, color).convert_alpha()
 
 
-def player_chicken_laser_egg_score_inf():
-    img = link_img()
-    size_ = size()
-    img_pl = load_obj(img['player'], size_['player'])
-    img_ck = load_obj(img['chicken'], size_['chicken'])
-    img_ls = load_obj(img['laser_pl_lv1'], size_['laser'])
-    img_egg = load_obj(img['egg'], size_['egg'])
-    explode = load_obj(img['explode'], size_['player'])
-    img_score = load_obj(img['score'], size_['egg'])
-    return {
-               'img': img_pl,
-               'img_explode': explode,
-               'rect': to_rect(img_pl),
-               'pos': [(600, 650)],
-               'size': size_['player'],
-               'move': 5,
-           }, {
-               'img': img_ck,
-               'img_explode': explode,
-               'rect': to_rect(img_ck),
-               'pos': [],  # [(x,y),...]
-               'size': size_['chicken']
-           }, {
-               'img': img_ls,
-               'rect': to_rect(img_ls),
-               'pos': [],  # [(x,y),...]
-               'size': size_['laser']
-           }, {
-               'img': img_egg,
-               'rect': to_rect(img_egg),
-               'pos': [],
-               'size': size_['egg']
-           }, {
-               'img': img_score,
-               'rect': to_rect(img_score),
-               'pos': [],
-               'size': size_['egg']
-           }
+def get_img(name_img='bg', name_size=None):
+    if not name_size:
+        name_size = name_img
+    img = all_img()
+    size = all_size()
+    x = pygame.image.load(img[name_img]).convert_alpha()
+    return pygame.transform.scale(x, size[name_size])
 
 
-def obj_playing():
-    img = link_img()
-    size_ = size()
+def menu_start():
+    size = all_size()
     return [
-        [load_obj(img['bg'], size_['bg']), (0, 0)],
-        [load_obj(img['score'], size_['items']), (0, 0)],
-        [load_obj(img['hp'], size_['items']), (0, 60)],
-        [text(25, 'Pause(Esc)', 'Gold'), (1250, 5)]
+        text('MAIN MENU', size['title'], 'Red'),
+        text('Play Game', size['font'], 'Yellow', True),
+        text('Exit', size['font'], 'Yellow', True)
     ]
 
 
-def obj_start():
-    img = link_img()
-    size_ = size()
-    txt = obj_basic()
+def menu_load():
+    size = all_size()
     return [
-        [load_obj(img['bg'], size_['bg']), (0, 0)],
-        [txt['menu'], size_['main_menu']],
-        [txt['text_play'], size_[1]],
-        [txt['text_exit'], size_[2]]
+        text('LOAD LEVEL', size['title'], 'Red'),
+        text('Previous Level', size['font'], 'Yellow', True),
+        text('New Game', size['font'], 'Yellow', True)
+    ]
+
+
+def menu_pause():
+    size = all_size()
+    return [
+        text('PAUSE GAME', size['title'], 'Red'),
+        text('Resume', size['font'], 'Yellow', True),
+        text('Reload', size['font'], 'Yellow', True)
+    ]
+
+
+def player_inf():
+    pl = get_img('player')
+    explode = get_img('explode')
+    return {
+        'img': pl,
+        'img_explode': explode,
+        'rect': pl.get_rect(),
+        'pos': [(600, 650)],
+        'move': 5,
+    }
+
+
+def chicken_inf():
+    ck = get_img('chicken')
+    explode = get_img('explode')
+    return {
+        'img': ck,
+        'img_explode': explode,
+        'rect': ck.get_rect(),
+        'pos': [],
+        'direct': []
+    }
+
+
+def laser_inf():
+    ls = get_img('laser')
+    return {
+        'img': ls,
+        'rect': ls.get_rect(),
+        'pos': []
+    }
+
+
+def eg_inf():
+    egg = get_img('egg')
+    return {
+        'img': egg,
+        'rect': egg.get_rect(),
+        'pos': [],
+        'direct': []
+    }
+
+
+def sc_inf():
+    sc = get_img('score', 'egg')
+    return {
+        'img': sc,
+        'rect': sc.get_rect(),
+        'pos': []
+    }
+
+
+def obj_default_playing():
+    pos = all_position()
+    size = all_size()
+    return [
+        [get_img('bg'), pos['bg']],
+        [get_img('score'), pos['score']],
+        [get_img('hp'), pos['hp']],
+        [text('Pause(Esc)', size['small_font'], 'Gold'), pos['pause']]
+    ]
+
+
+def game_level():
+    return [
+        [],
+        [1500, 30, 1, 80, 10, 25],
+        [1000, 45, 1, 70, 15, 65],
+        [800, 60, 1, 70, 15, 125],
+        [500, 40, 3, 120, 20, 180],
+        [500, 60, 4, 80, 20, 250]
+    ]
+
+
+def gun_level():
+    return [
+        [],
+        [1000, 1, 8, 10],
+        [500, 1, 8, 25],
+        [1000, 2, 10, 50],
+        [800, 2, 10, 80],
+        [500, 2, 10, 100],
+        [1000, 3, 10, 120],
+        [800, 3, 10, 150],
+        [500, 3, 10, 200]
     ]
